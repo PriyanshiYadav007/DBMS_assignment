@@ -86,24 +86,78 @@ CREATE TABLE Appointments (
 );
 ```
 
-### Relationship Diagram
-```
-┌──────────────┐      ┌──────────────┐      ┌──────────────┐
-│   Patients   │      │ Appointments │      │   Doctors    │
-├──────────────┤      ├──────────────┤      ├──────────────┤
-│patient_id(PK)│◄────►│patient_id(FK)│      │doctor_id(PK) │
-│first_name    │      │doctor_id(FK) │◄────►│first_name    │
-│last_name     │      │appt_date     │      │specialization│
-└──────────────┘      └──────┬───────┘      └──────────────┘
-                             │
-                             ▼
-                      ┌──────────────┐      ┌──────────────┐
-                      │  Treatments  │      │   Billing    │
-                      ├──────────────┤      ├──────────────┤
-                      │treatment_id  │◄────►│treatment_id  │
-                      │appointment_id│      │patient_id    │
-                      │cost          │      │amount        │
-                      └──────────────┘      └──────────────┘
+### Relationship Diagram (PlantUML)
+```plantuml
+@startuml Hospital_Management_ER_Diagram
+
+skinparam linetype ortho
+skinparam entity {
+    BackgroundColor LightYellow
+    BorderColor DarkGreen
+}
+
+entity "Patients" as patients {
+    * patient_id : VARCHAR(10) <<PK>>
+    --
+    * first_name : VARCHAR(50)
+    * last_name : VARCHAR(50)
+    gender : CHAR(1)
+    * date_of_birth : DATE
+    contact_number : VARCHAR(15)
+    email : VARCHAR(100)
+    insurance_provider : VARCHAR(50)
+}
+
+entity "Doctors" as doctors {
+    * doctor_id : VARCHAR(10) <<PK>>
+    --
+    * first_name : VARCHAR(50)
+    * last_name : VARCHAR(50)
+    * specialization : VARCHAR(50)
+    phone_number : VARCHAR(15)
+    years_experience : INT
+    hospital_branch : VARCHAR(50)
+}
+
+entity "Appointments" as appointments {
+    * appointment_id : VARCHAR(10) <<PK>>
+    --
+    * patient_id : VARCHAR(10) <<FK>>
+    * doctor_id : VARCHAR(10) <<FK>>
+    * appointment_date : DATE
+    * appointment_time : TIME
+    reason_for_visit : VARCHAR(50)
+    status : VARCHAR(20)
+}
+
+entity "Treatments" as treatments {
+    * treatment_id : VARCHAR(10) <<PK>>
+    --
+    * appointment_id : VARCHAR(10) <<FK>>
+    treatment_type : VARCHAR(50)
+    description : VARCHAR(100)
+    cost : DECIMAL(10,2)
+    * treatment_date : DATE
+}
+
+entity "Billing" as billing {
+    * bill_id : VARCHAR(10) <<PK>>
+    --
+    * patient_id : VARCHAR(10) <<FK>>
+    * treatment_id : VARCHAR(10) <<FK>>
+    * bill_date : DATE
+    amount : DECIMAL(10,2)
+    payment_method : VARCHAR(20)
+    payment_status : VARCHAR(20)
+}
+
+patients ||--o{ appointments : "books"
+doctors ||--o{ appointments : "attends"
+appointments ||--|| treatments : "has"
+treatments ||--|| billing : "generates"
+patients ||--o{ billing : "receives"
+
+@enduml
 ```
 
 ---
